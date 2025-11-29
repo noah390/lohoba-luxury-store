@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign In - Lohoba Luxury</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+  <div class="auth-container">
+    <div class="auth-box">
+      <div class="logo">Lohoba Luxury</div>
+      
+      <!-- Sign In Form -->
+      <div id="signInForm" class="auth-form">
+        <h2>Welcome Back</h2>
+        <form onsubmit="signIn(event)">
+          <input type="email" id="signInEmail" placeholder="Email" required>
+          <input type="password" id="signInPassword" placeholder="Password" required>
+          <button type="submit">Sign In</button>
+        </form>
+        <p><a href="#" onclick="showForgotPassword()">Forgot Password?</a></p>
+        <p>Don't have an account? <a href="#" onclick="showSignUp()">Sign Up</a></p>
+      </div>
+      
+      <!-- Sign Up Form -->
+      <div id="signUpForm" class="auth-form" style="display: none;">
+        <h2>Create Account</h2>
+        <form onsubmit="signUp(event)">
+          <input type="text" id="signUpName" placeholder="Full Name" required>
+          <input type="email" id="signUpEmail" placeholder="Email" required>
+          <input type="password" id="signUpPassword" placeholder="Password" required>
+          <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="#" onclick="showSignIn()">Sign In</a></p>
+      </div>
+      
+      <!-- Forgot Password Form -->
+      <div id="forgotPasswordForm" class="auth-form" style="display: none;">
+        <h2>Reset Password</h2>
+        <form onsubmit="resetPassword(event)">
+          <input type="email" id="resetEmail" placeholder="Enter your email" required>
+          <button type="submit">Send Reset Email</button>
+        </form>
+        <p><a href="#" onclick="showSignIn()">Back to Sign In</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>
