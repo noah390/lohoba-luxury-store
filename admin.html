@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel - Lohoba Luxury</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjt8ZbkaUusAT7oxn1lh-d0aMzxI3ERpg",
+      authDomain: "lohoba-luxury.firebaseapp.com",
+      projectId: "lohoba-luxury",
+      storageBucket: "lohoba-luxury.firebasestorage.app",
+      messagingSenderId: "967128471724",
+      appId: "1:967128471724:web:84df89cdeb33defcb7e709"
+    };
+    
+    // Initialize Firebase
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized');
+    } catch (error) {
+      console.log('Firebase initialization failed, using localStorage');
+    }
+  </script>
 </head>
 <body>
 

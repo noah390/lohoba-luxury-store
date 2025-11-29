@@ -11,13 +11,17 @@
   <nav class="navbar">
     <div class="nav-container">
       <div class="logo">Lohoba Luxury</div>
-      <ul class="nav-menu">
-        <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="shop.html" class="nav-link active">Shop</a></li>
-        <li><a href="about.html" class="nav-link">About Us</a></li>
-        <li><a href="blog.html" class="nav-link">Blog</a></li>
-        <li><a href="contact.html" class="nav-link">Contact</a></li>
-
+      <div class="hamburger" onclick="toggleMobileMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html" class="nav-link" onclick="closeMobileMenu()">Home</a></li>
+        <li><a href="shop.html" class="nav-link active" onclick="closeMobileMenu()">Shop</a></li>
+        <li><a href="about.html" class="nav-link" onclick="closeMobileMenu()">About Us</a></li>
+        <li><a href="blog.html" class="nav-link" onclick="closeMobileMenu()">Blog</a></li>
+        <li><a href="contact.html" class="nav-link" onclick="closeMobileMenu()">Contact</a></li>
       </ul>
       <div class="user-info" id="userInfo" style="display: none;">
         <span id="userName"></span>

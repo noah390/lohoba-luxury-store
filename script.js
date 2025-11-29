@@ -284,12 +284,16 @@ async function fetchProductsFromSheet() {
 
 function showLoading() {
   const box = document.getElementById("products");
-  box.innerHTML = '<div class="loading">Loading luxury products...</div>';
+  if (box) {
+    box.innerHTML = '<div class="loading">Loading luxury products...</div>';
+  }
 }
 
 function showError() {
   const box = document.getElementById("products");
-  box.innerHTML = '<div class="error">Unable to load products. Please try again later.</div>';
+  if (box) {
+    box.innerHTML = '<div class="error">Unable to load products. Please try again later.</div>';
+  }
 }
 
 function renderProducts(productList = products){
@@ -321,6 +325,11 @@ function renderProducts(productList = products){
 
 // Initialize the app
 async function initApp() {
+  // Only run on pages with products div (not admin page)
+  if (!document.getElementById('products')) {
+    return;
+  }
+  
   showLoading();
   
   try {
@@ -525,14 +534,61 @@ function filterAndDisplayProducts(searchTerm, category) {
   renderProducts(filteredProducts);
 }
 
-// Blog functionality
+// Load blog posts from Firebase for all users
 function loadBlogPosts() {
-  const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
   const blogGrid = document.getElementById('blogGrid');
   const defaultPosts = document.getElementById('defaultPosts');
   const featuredContent = document.getElementById('featuredContent');
   
-  if (posts.length > 0) {
+  console.log('Loading blog posts...');
+  console.log('Firebase available:', typeof firebase !== 'undefined');
+  
+  // Try Firebase first with fresh data
+  if (typeof firebase !== 'undefined' && firebase.firestore) {
+    console.log('Attempting to load from Firebase...');
+    firebase.firestore().collection('blogPosts')
+      .orderBy('id', 'desc')
+      .get({ source: 'server' }) // Force server fetch, no cache
+      .then((querySnapshot) => {
+        const posts = [];
+        querySnapshot.forEach((doc) => {
+          posts.push({ ...doc.data(), firebaseId: doc.id });
+        });
+        
+        console.log('✅ Firebase posts loaded:', posts.length);
+        console.log('Posts:', posts.map(p => ({ title: p.title, id: p.id })));
+        
+        if (posts.length > 0) {
+          // Save to localStorage for offline access
+          localStorage.setItem('blogPosts', JSON.stringify(posts));
+          displayBlogPosts(posts, blogGrid, defaultPosts, featuredContent);
+        } else {
+          console.log('No Firebase posts, checking localStorage...');
+          // No Firebase posts, try localStorage
+          const localPosts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+          console.log('LocalStorage posts:', localPosts.length);
+          displayBlogPosts(localPosts, blogGrid, defaultPosts, featuredContent);
+        }
+      })
+      .catch((error) => {
+        console.error('❌ Firebase error:', error);
+        // Fallback to localStorage
+        const localPosts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+        console.log('Using localStorage fallback, posts:', localPosts.length);
+        displayBlogPosts(localPosts, blogGrid, defaultPosts, featuredContent);
+      });
+  } else {
+    console.log('❌ Firebase not available, using localStorage only');
+    // No Firebase, use localStorage
+    const localPosts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+    console.log('LocalStorage only, posts:', localPosts.length);
+    displayBlogPosts(localPosts, blogGrid, defaultPosts, featuredContent);
+  }
+}
+
+// Display blog posts helper function
+function displayBlogPosts(posts, blogGrid, defaultPosts, featuredContent) {
+  if (posts && posts.length > 0) {
     // Hide default posts
     if (defaultPosts) defaultPosts.style.display = 'none';
     
@@ -544,7 +600,7 @@ function loadBlogPosts() {
           <div class="featured-text">
             <h3>${posts[0].title}</h3>
             <p class="blog-date">${posts[0].date}</p>
-            <p>${posts[0].content}</p>
+            <p>${posts[0].content.substring(0, 200)}...</p>
           </div>
         </div>
       `;
@@ -568,6 +624,7 @@ function loadBlogPosts() {
     // Show default posts
     if (defaultPosts) defaultPosts.style.display = 'grid';
     if (featuredContent) featuredContent.innerHTML = '<p>No featured posts yet.</p>';
+    if (blogGrid) blogGrid.innerHTML = '';
   }
 }
 
@@ -608,6 +665,41 @@ function getSessionId() {
   }
   return sessionId;
 }
+
+// Mobile Navigation Functions
+function toggleMobileMenu() {
+  const hamburger = document.querySelector('.hamburger');
+  const navMenu = document.getElementById('navMenu');
+  
+  hamburger.classList.toggle('active');
+  navMenu.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+  const hamburger = document.querySelector('.hamburger');
+  const navMenu = document.getElementById('navMenu');
+  
+  hamburger.classList.remove('active');
+  navMenu.classList.remove('active');
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(event) {
+  const hamburger = document.querySelector('.hamburger');
+  const navMenu = document.getElementById('navMenu');
+  const navbar = document.querySelector('.navbar');
+  
+  if (!navbar.contains(event.target) && navMenu.classList.contains('active')) {
+    closeMobileMenu();
+  }
+});
+
+// Close mobile menu on window resize if screen becomes larger
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 768) {
+    closeMobileMenu();
+  }
+});
 
 // Start the app when page loads
 document.addEventListener('DOMContentLoaded', () => {

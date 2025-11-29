@@ -48,13 +48,15 @@ function showDashboard() {
   loadExistingPosts();
 }
 
-// Add new blog post
+// Add new blog post to Firebase
 function addBlogPost(event) {
   event.preventDefault();
   
   const title = document.getElementById('blogTitle').value;
   const image = document.getElementById('blogImage').value;
   const content = document.getElementById('blogContent').value;
+  
+  console.log('Adding blog post:', { title, image: image.substring(0, 50) + '...', content: content.substring(0, 50) + '...' });
   
   const post = {
     id: Date.now(),
@@ -68,26 +70,55 @@ function addBlogPost(event) {
     })
   };
   
-  // Get existing posts
-  let posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
-  posts.unshift(post); // Add to beginning
+  // Check Firebase availability
+  console.log('Firebase available:', typeof firebase !== 'undefined');
+  console.log('Firestore available:', typeof firebase !== 'undefined' && firebase.firestore);
   
-  // Save to localStorage
-  localStorage.setItem('blogPosts', JSON.stringify(posts));
+  // Save to Firebase first
+  if (typeof firebase !== 'undefined' && firebase.firestore) {
+    console.log('Attempting to save to Firebase...');
+    firebase.firestore().collection('blogPosts').add(post)
+      .then((docRef) => {
+        console.log('✅ Firebase save successful, doc ID:', docRef.id);
+        // Also save to localStorage as backup
+        let posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+        posts.unshift(post);
+        localStorage.setItem('blogPosts', JSON.stringify(posts));
+        
+        alert('✅ Blog post published to Firebase successfully!');
+        loadExistingPosts();
+      })
+      .catch((error) => {
+        console.error('❌ Firebase save failed:', error);
+        // Fallback to localStorage only
+        let posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+        posts.unshift(post);
+        localStorage.setItem('blogPosts', JSON.stringify(posts));
+        alert('⚠️ Firebase failed, post saved locally only: ' + error.message);
+        loadExistingPosts();
+      });
+  } else {
+    console.log('❌ Firebase not available, saving to localStorage only');
+    // No Firebase, save to localStorage only
+    let posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+    posts.unshift(post);
+    localStorage.setItem('blogPosts', JSON.stringify(posts));
+    alert('⚠️ Post saved locally only (Firebase not configured)');
+    loadExistingPosts();
+  }
   
   // Clear form
   document.getElementById('blogTitle').value = '';
   document.getElementById('blogImage').value = '';
   document.getElementById('blogContent').value = '';
-  
-  alert('Blog post published successfully!');
-  loadExistingPosts();
 }
 
 // Load existing posts
 function loadExistingPosts() {
-  const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
   const postsList = document.getElementById('postsList');
+  
+  // Load from localStorage first
+  const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
   
   if (posts.length === 0) {
     postsList.innerHTML = '<p>No blog posts yet.</p>';
@@ -111,7 +142,7 @@ function loadExistingPosts() {
 function deletePost(postId) {
   if (confirm('Are you sure you want to delete this post?')) {
     let posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
-    posts = posts.filter(post => post.id !== postId);
+    posts = posts.filter(post => post.id != postId); // Use != for type flexibility
     localStorage.setItem('blogPosts', JSON.stringify(posts));
     loadExistingPosts();
     alert('Post deleted successfully!');
